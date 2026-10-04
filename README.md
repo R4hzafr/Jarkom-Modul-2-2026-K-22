@@ -181,7 +181,7 @@ iface eth0 inet static
 ```
 Testing beberapa:
 
-[alt image](assets/1-testing.png)
+![alt image](assets/1-testing.png)
 
 ---
 
@@ -227,7 +227,7 @@ iface eth5 inet static
 ```
 Testing di beberapa:
 
-[alt text](assets/2-testing.png)
+![alt text](assets/2-testing.png)
 
 ---
 
@@ -240,7 +240,7 @@ up echo -e "nameserver 192.222.1.2\nnameserver 192.222.1.3\nnameserver 192.168.1
 
 Check /etc/resolv.conf di beberapa host:
 
-[alt image](3-check.png)
+![alt image](assets/3-check.png)
 
 ---
 
@@ -272,9 +272,9 @@ Alur konfigurasi pada Prab adalah sebagai berikut:
 
 Hasilnya:
 
-[alt text](assets/4-master.png)
+![alt text](assets/4-master.png)
 
-Scriptnya [setup_dns_master.sh](nodes/switch1/switch2/tedd/setup_dns_master.sh)
+Scriptnya [setup_dns_master.sh](nodes/switch1/switch2/prab/setup_dns_master.sh)
 <details>
   <summary>Klik untuk melihat script lengkap</summary>
 
@@ -397,7 +397,7 @@ Alur konfigurasi pada Tedd adalah sebagai berikut:
 
 Hasilnya:
 
-[alt text](assets/4-slave.png)
+![alt text](assets/4-slave.png)
 
 Scriptnya [setup_dns_slave.sh](nodes/switch1/switch2/tedd/setup_dns_slave.sh)
 <details>
@@ -494,13 +494,13 @@ Disini, kami langsung saja menggunakan shell script. Alur shell scriptnya (dijal
 
 Hasilnya:
 
-[alt img](5-result)
+![alt img](assets/5-result.png)
 
 Script lengkap: [setup_dns_records_5.sh](nodes/switch1/switch2/prab/setup_dns_records_5.sh)
 <details>
 <summary>Klik untuk melihat script lengkap</summary>
 
-```bash
+```
 #!/bin/bash
 
 set -e
@@ -637,13 +637,13 @@ Untuk soal ini, kami langsung saja menjalankan script [setup_zone_transfer_6.sh]
 
 Hasilnya:
 
-[alt img](assets/6-result)
+![alt img](assets/6-result.png)
 
 Script lengkap:
 <details>
 <summary>Klik untuk melihat script lengkap</summary>
 
-```bash
+```
 #!/bin/bash
 
 set -e
@@ -743,7 +743,7 @@ Script lengkap [setup_dns_records_7.sh](nodes/switch1/switch2/prab/setup_dns_rec
 <details>
 <summary>Klik untuk melihat script lengkap</summary>
 
-```bash
+```
 #!/bin/bash
 
 set -e
@@ -859,7 +859,7 @@ echo
 
 Untuk pengujiannya disini kami menggunakan script [test_7.sh](nodes/switch1/switch2/tedd/test_7.sh) di **tedd**, hasilnya:
 
-[alt img](7-result.png)
+![alt img](assets/7-result.png)
 
 ---
 
@@ -901,7 +901,7 @@ Konfigurasi dilakukan dengan menjalankan script [setup_dns_reverse_8.sh](nodes/s
 <details>
 <summary>Klik untuk melihat script lengkap</summary>
 
-```bash
+```
 #!/bin/bash
 
 set -e
@@ -1044,7 +1044,7 @@ Setelah Reverse DNS Master dikonfigurasi pada Prab, script [setup_dns_reverse_sl
 <details>
 <summary>Klik untuk melihat script lengkap</summary>
 
-```bash
+```
 #!/bin/bash
 
 set -e
@@ -1126,7 +1126,7 @@ echo
 
 Testing:
 
-[alt img](assets/8-result.png)
+![alt img](assets/8-result.png)
 
 ---
 
@@ -1169,7 +1169,7 @@ Script lengkap:
 <details>
 <summary>Klik untuk melihat script lengkap</summary>
 
-```bash
+```
 #!/bin/bash
 
 set -e
@@ -1252,7 +1252,7 @@ echo
 
 Testing di **obladi** menggunakan curl dan di **desmond** menggunakan lynx
 
-[assets/9-result.png]
+![assets/9-result.png]
 
 ---
 
@@ -1260,7 +1260,7 @@ Testing di **obladi** menggunakan curl dan di **desmond** menggunakan lynx
 
 Pada soal ini, dilakukan konfigurasi **Web Server Dinamis** pada node **Oblada** dan **Molly** yang tergabung dalam area *core*. Kedua node dikonfigurasi menggunakan **Nginx** sebagai web server dan **PHP-FPM** untuk memproses halaman PHP. Aplikasi web yang dibuat menyediakan halaman beranda dan halaman profil yang dapat diakses melalui hostname `core.k22.com`, termasuk menggunakan URL bersih `/profil` tanpa akhiran `.php`.
 
-Konfigurasi dilakukan dengan menjalankan script [setup_web_dynamic_10_fix.sh](nodes/switch1/switch3/oblada/setup_web_dynamic_10_fix.sh) pada node **Oblada** dan **Molly**. Script yang disediakan melakukan beberapa tahapan berikut:
+Konfigurasi dilakukan dengan menjalankan script [setup_web_dynamic_10_final.sh](nodes/switch1/switch3/oblada/setup_web_dynamic_10_final.sh) pada node **Oblada** dan **Molly**. Script yang disediakan melakukan beberapa tahapan berikut:
 
 1. **Instalasi Nginx dan PHP-FPM**
 
@@ -1297,7 +1297,7 @@ Script lengkap:
 <details>
 <summary>Klik untuk melihat script lengkap</summary>
 
-```bash
+```
 #!/bin/bash
 
 set -e
@@ -1549,6 +1549,6 @@ echo
 
 Testing di oblada menggunakan lynx: `lynx http://core.k22.com/profil` dan di molly menggunakan curl: `curl http://core.k22.com/profil`
 
-[alt img](assets/10-result)
+![alt img](assets/10-result.png)
 
 ---
