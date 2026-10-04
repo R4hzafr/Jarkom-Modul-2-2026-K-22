@@ -1,0 +1,34 @@
+# =========================================================
+# SOAL 13 - Redirect penny -> www
+# =========================================================
+<VirtualHost *:80>
+    ServerName penny.k22.com
+    ServerAlias 192.222.3.2
+
+    Redirect 301 / http://www.k22.com/
+</VirtualHost>
+
+
+# =========================================================
+# SOAL 11 - Reverse Proxy www -> Vault
+# =========================================================
+<VirtualHost *:80>
+    ServerName www.k22.com
+
+    ProxyRequests Off
+    ProxyPreserveHost On
+
+    <Proxy "balancer://vault_cluster">
+        BalancerMember http://192.222.1.4
+        BalancerMember http://192.222.1.5
+        ProxySet lbmethod=byrequests
+    </Proxy>
+
+    ProxyPass        "/" "balancer://vault_cluster/"
+    ProxyPassReverse "/" "balancer://vault_cluster/"
+
+    RequestHeader set X-Real-IP expr=%{REMOTE_ADDR}
+
+    ErrorLog ${APACHE_LOG_DIR}/penny_proxy_error.log
+    CustomLog ${APACHE_LOG_DIR}/penny_proxy_access.log combined
+</VirtualHost>
