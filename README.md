@@ -705,7 +705,7 @@ fi
 
 ---
 
-> 6. abbey dan penny sebagai gerbang utama, obladi dan desmond sebagai web statis, oblada dan molly sebagai web dinamis. Tambahkan pada zona k22.com A record untuk vault.k22.com (IP obladi & desmond), dan core.k22.com (IP oblada & molly). Tetapkan CNAME: www.k22.com → penny.k22.com dan static.k22.com → abbey.k22.com. Verifikasi dari dua klien berbeda bahwa seluruh hostname tersebut ter-resolve ke tujuan yang benar dan konsisten.
+> 7. abbey dan penny sebagai gerbang utama, obladi dan desmond sebagai web statis, oblada dan molly sebagai web dinamis. Tambahkan pada zona k22.com A record untuk vault.k22.com (IP obladi & desmond), dan core.k22.com (IP oblada & molly). Tetapkan CNAME: www.k22.com → penny.k22.com dan static.k22.com → abbey.k22.com. Verifikasi dari dua klien berbeda bahwa seluruh hostname tersebut ter-resolve ke tujuan yang benar dan konsisten.
 
 Pada soal ini, dilakukan konfigurasi DNS Record untuk menghubungkan domain `k22.com` dengan layanan web statis dan dinamis. Konfigurasi dilakukan menggunakan shell script pada Prab sebagai DNS Master, kemudian dilakukan pengujian dari Tedd untuk memastikan setiap DNS Record dapat di-resolve dengan benar.
 
