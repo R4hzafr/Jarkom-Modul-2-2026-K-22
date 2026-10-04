@@ -1552,3 +1552,622 @@ Testing di oblada menggunakan lynx: `lynx http://core.k22.com/profil` dan di mol
 ![alt img](assets/10-result.png)
 
 ---
+
+
+## 11. Konfigurasi Reverse Proxy pada Penny dan Abbey
+
+Pada soal nomor 11, Penny dikonfigurasikan sebagai reverse proxy menggunakan Apache yang meneruskan request menuju dua web server pada area vault, yaitu Obladi dan Desmond. Sementara itu, Abbey dikonfigurasikan sebagai reverse proxy menggunakan Nginx yang meneruskan request menuju dua web server pada area core, yaitu Oblada dan Molly.
+
+Selain meneruskan request menuju backend, reverse proxy juga dikonfigurasikan agar tetap meneruskan informasi host yang diakses oleh client serta alamat IP asli client melalui header `Host` dan `X-Real-IP`.
+
+### Konfigurasi Reverse Proxy pada Abbey
+
+Konfigurasi pertama dilakukan pada node Abbey dengan menjalankan script:
+
+```bash
+./setup_reverse_proxy_abbey_11.sh
+```
+
+Script tersebut digunakan untuk menyiapkan Nginx pada Abbey  dan mengatur Abbe
+y sebagai reverse proxy menuju server pada area core, yaitu Oblada dan Molly
+
+
+<img width="727" height="372" alt="Screenshot 2026-10-04 at 22 00 23" src="https://github.com/user-attachments/assets/2f05e820-582b-4d8b-ac7b-bb42da3633cb" />
+
+Pada proses di atas, script mulai melakukan instalasi dan konfigurasi Nginx. Terlihat terdapat pesan peringatan pada proses verifikasi repository Debian. Oleh karena itu, hasil akhir konfigurasi tetap perlu diverifikasi kembali melalui pengujian akses ke reverse proxy
+
+Selanjutnya konfigurasi dilakukan pada node Penny dengan menjalankan script:
+
+```
+./setup_reverse_proxy_penny_11.sh
+```
+
+
+<img width="709" height="418" alt="Screenshot 2026-10-04 at 22 02 12" src="https://github.com/user-attachments/assets/b9c15062-7708-41d2-b70b-4d8032786648" />
+
+Sama seperti pada Abbey, script pada Penny melakukan instalasi web server terlebih dahulu kemudian menerapkan konfigurasi reverse proxy sesuai backend yang telah ditentukan.
+
+Setelah konfigurasi selesai, dilakukan pengujian pada Abbey menggunakan script:
+
+```
+./test_11.sh
+```
+
+
+<img width="722" height="352" alt="Screenshot 2026-10-04 at 22 03 07" src="https://github.com/user-attachments/assets/1025f31d-7a8a-49e4-bb4b-59ac3363198e" />
+
+Pengujian dilakukan sebanyak beberapa kali untuk melihat proses distribusi request. Agar hasil pengujian lebih jelas, response dari backend sebaiknya menampilkan identitas server yang melayani request, sehingga dapat dibuktikan bahwa request diteruskan menuju Oblada dan Molly.
+
+Pengujian yang sama kemudian dilakukan pada node Penny.
+
+```
+./test_11.sh
+```
+
+
+<img width="724" height="354" alt="Screenshot 2026-10-04 at 22 04 04" src="https://github.com/user-attachments/assets/36a18233-98a8-4594-a322-970ed56ee974" />
+
+Request dilakukan secara berulang untuk memastikan Penny dapat meneruskan koneksi menuju backend area vault. Hasil pengujian idealnya memperlihatkan response dari Obladi dan Desmond secara bergantian atau sesuai mekanisme distribusi yang digunakan.
+#### Kesimpulan
+Pada nomor 11, Abbey dan Penny digunakan sebagai gerbang reverse proxy untuk dua kelompok web server yang berbeda. Abbey menggunakan Nginx untuk meneruskan request menuju Oblada dan Molly, sedangkan Penny menggunakan Apache untuk meneruskan request menuju Obladi dan Desmond.
+Pengujian dilakukan dengan mengirimkan beberapa request secara berulang ke masing-masing reverse proxy. Selain kemampuan meneruskan request ke backend, konfigurasi juga harus mempertahankan header Host dan meneruskan alamat IP asli client melalui X-Real-IP.
+
+### 12. Basic Authentication pada Path `/admin`
+
+Pada soal nomor 12, node **Penny** diminta untuk memberikan perlindungan pada path `/admin` menggunakan **Basic Authentication**.
+
+Tujuan konfigurasi ini adalah agar halaman `/admin` tidak dapat diakses secara bebas. Client yang mencoba mengakses halaman tersebut tanpa memberikan username dan password harus ditolak. Akses hanya diberikan apabila client memasukkan credential yang sesuai dengan soal.
+
+Credential yang digunakan adalah:
+
+```
+text
+Username : prabs
+Password : pakar_pinter_jadi_gob
+```
+
+Konfigurasi dilakukan pada node Penny dengan menjalankan script nomor 12 yang telah dibuat.
+```
+./setup_auth_12.sh
+```
+
+Script tersebut digunakan untuk membuat credential Basic Authentication dan menerapkan proteksi pada path /admin di web server Apache milik Penny.
+
+
+<img width="710" height="423" alt="Screenshot 2026-10-04 at 22 09 17" src="https://github.com/user-attachments/assets/d40b4e3e-d093-4f60-b885-6e219a54dce8" />
+
+Setelah konfigurasi selesai, dilakukan pengujian dengan mengakses /admin tanpa menyertakan username dan password.
+Contoh pengujian:
+```
+curl -I http://www.K22.com/admin
+```
+Pada kondisi ini, server seharusnya menolak akses karena client belum melakukan autentikasi. Response yang diharapkan adalah:
+```
+HTTP/1.1 401 Unauthorized
+```
+
+
+
+<img width="680" height="304" alt="Screenshot 2026-10-04 at 23 15 15" src="https://github.com/user-attachments/assets/298a3ad2-bb92-4526-b527-21d837b35eac" />
+
+
+
+
+
+Selanjutnya dilakukan pengujian menggunakan username dan password yang telah ditentukan.
+Apabila username dan password benar, request dapat melewati proses autentikasi dan isi halaman /admin dapat ditampilkan.
+
+
+
+<img width="797" height="330" alt="Screenshot 2026-10-04 at 23 15 25" src="https://github.com/user-attachments/assets/206a5747-0723-40a4-8ff2-b8dca3a4972e" />
+
+
+
+
+Berdasarkan pengujian, path /admin pada Penny telah dilindungi menggunakan Basic Authentication. Akses tanpa credential ditolak oleh server, sedangkan client yang menggunakan username dan password yang sesuai dapat mengakses halaman tersebut. Dengan demikian, konfigurasi pada nomor 12 telah memenuhi requirement autentikasi untuk halaman /admin
+
+ujicoba:
+
+```
+curl -u 'prabs:pakar_pinter_jadi_gob***' http://penny.k22.com/admin/ | grep -E 'ADMIN AREA|Hostname'
+```
+
+
+<img width="713" height="148" alt="Screenshot 2026-10-04 at 23 16 30" src="https://github.com/user-attachments/assets/d2ad1a7c-7829-4e38-9c59-5a3451106663" />
+
+
+
+
+### 13. Redirect ke Domain Kanonik
+
+Pada soal nomor 13, Penny dan Abbey dikonfigurasikan agar setiap akses tidak menggunakan hostname non-kanonik. Pada Penny, akses yang dilakukan melalui IP address Penny maupun melalui domain penny.K22.com harus diarahkan secara permanen menuju www.K22.com menggunakan status code 301. Sementara itu, pada Abbey, akses melalui IP address Abbey maupun domain abbey.K22.com harus diarahkan sementara menuju static.K22.com menggunakan status code 302.
+
+```
+text
+penny.K22.com
+```
+
+Konfigurasi pertama dilakukan pada node Penny dengan menjalankan script konfigurasi nomor 13. Script tersebut digunakan untuk membuat aturan redirect sehingga setiap request yang masuk melalui IP address Penny maupun domain penny.K22.com akan diarahkan menuju domain kanonik www.K22.com
+
+
+<img width="842" height="731" alt="Screenshot 2026-10-04 at 23 17 46" src="https://github.com/user-attachments/assets/eb4480d6-91b6-4968-8ba0-8f0e071fe5e6" />
+
+
+
+Selanjutnya dilakukan konfigurasi pada node Abbey dengan menjalankan script konfigurasi nomor 13. Konfigurasi ini digunakan untuk mengarahkan request yang masuk melalui IP address Abbey maupun domain abbey.K22.com menuju domain kanonik static.K22.com
+
+
+<img width="842" height="731" alt="Screenshot 2026-10-04 at 23 17 46" src="https://github.com/user-attachments/assets/eb4480d6-91b6-4968-8ba0-8f0e071fe5e6" />
+
+
+Setelah konfigurasi selesai, dilakukan pengujian terhadap Penny untuk memastikan aturan redirect telah berjalan dengan benar. Pengujian dilakukan dengan mengakses penny.K22.com dan memeriksa response header yang diberikan oleh web server.
+Hasil pengujian menunjukkan bahwa Penny memberikan status code 301 Moved Permanently dan mengarahkan request menuju www.K22.com. Hal ini menunjukkan bahwa redirect permanen pada Penny telah berjalan sesuai dengan requirement
+
+
+
+
+
+
+Pengujian selanjutnya dilakukan pada Abbey dengan mengakses abbey.K22.com. Response header diperiksa untuk memastikan bahwa request diarahkan menuju hostname kanonik yang telah ditentukan.
+Hasil pengujian menunjukkan bahwa Abbey memberikan status code 302 Found dan mengarahkan request menuju static.K22.com. Status 302 menunjukkan bahwa redirect yang dilakukan bersifat sementara, sesuai dengan requirement soal
+
+
+
+<img width="764" height="72" alt="Screenshot 2026-10-04 at 23 20 17" src="https://github.com/user-attachments/assets/86c825c6-af5c-41b3-88cb-797c9f08bc4a" />
+
+
+
+Berdasarkan konfigurasi dan pengujian yang telah dilakukan, Penny berhasil melakukan redirect permanen menuju www.K22.com menggunakan status code 301, sedangkan Abbey berhasil melakukan redirect sementara menuju static.K22.com menggunakan status code 302. Dengan demikian, kedua gateway telah menggunakan domain kanonik sesuai dengan ketentuan pada soal.
+
+### 14. Konfigurasi Access Log agar Mencatat IP Client Asli
+
+Pada soal nomor 14, seluruh web server pada area vault dan core harus mencatat alamat IP asli milik client yang melakukan request. Karena request menuju backend melewati reverse proxy Penny dan Abbey, secara default server backend berpotensi mencatat alamat IP milik reverse proxy. Oleh karena itu, konfigurasi logging perlu disesuaikan agar access log menampilkan IP asli client yang diteruskan oleh gateway
+dilakukan penjalanan script terlebih dahulu 
+
+
+
+
+![Uploading Screenshot 2026-10-04 at 23.22.48.png…]()
+
+
+
+Konfigurasi pertama dilakukan pada server yang berada di area vault, yaitu Obladi dan Desmond. Konfigurasi access log disesuaikan agar server membaca informasi alamat IP asli client yang diteruskan oleh Penny melalui header reverse proxy.
+Dengan konfigurasi tersebut, ketika client mengakses layanan melalui Penny, log pada Obladi maupun Desmond diharapkan tidak lagi mencatat IP milik Penny, melainkan IP client yang sebenarnya
+
+
+
+
+
+
+Konfigurasi yang sama kemudian dilakukan pada server di area core, yaitu Oblada dan Molly. Server dikonfigurasikan agar menggunakan informasi alamat IP asli client yang diteruskan oleh Abbey.
+Dengan demikian, request yang masuk melalui Abbey tetap dapat dicatat pada access log backend menggunakan alamat IP client sebenarnya.
+
+
+
+
+
+
+Setelah konfigurasi selesai, dilakukan request dari salah satu client menuju layanan yang melewati Penny. Setelah request diterima, access log pada backend area vault diperiksa untuk memastikan alamat IP yang tercatat merupakan IP milik client.
+Hasil pengujian menunjukkan bahwa access log pada server area vault mencatat alamat IP client yang melakukan request, bukan alamat IP milik Penny sebagai reverse proxy
+
+
+
+
+
+
+
+Pengujian selanjutnya dilakukan dengan mengirim request menuju layanan yang melewati Abbey. Setelah itu, access log pada Oblada atau Molly diperiksa.
+Hasil pengujian menunjukkan bahwa alamat IP yang tersimpan pada access log merupakan alamat IP asli client, bukan IP Abbey. Hal ini membuktikan bahwa informasi alamat client berhasil diteruskan oleh reverse proxy hingga ke backend
+
+
+
+
+
+
+
+Berdasarkan konfigurasi dan pengujian yang telah dilakukan, server web pada area vault maupun area core telah berhasil mencatat alamat IP asli client pada access log. Dengan demikian, meskipun request melewati Penny dan Abbey sebagai reverse proxy, identitas alamat IP client tetap dapat dipertahankan dan dicatat oleh server backend sesuai dengan requirement soal.
+
+### 15. Konfigurasi Path Khusus /eternal dan /orion
+
+Pada soal nomor 15, dibuat dua path khusus pada gateway Penny dan Abbey. Pada Penny, path /eternal harus menyajikan isi dari direktori /var/www/eternal dan file PHP di dalamnya harus dapat dieksekusi atau dirender. Sementara pada Abbey, path /orion harus menyajikan isi dari direktori /var/www/orion sebagai konten statis tanpa proses rendering PHP
+
+Konfigurasi pertama dilakukan pada node Penny dengan menjalankan script konfigurasi nomor 15 untuk membuat path /eternal
+
+```
+./setup_15_penny_fix.sh
+```
+
+
+
+<img width="1062" height="396" alt="Screenshot 2026-10-04 at 23 26 58" src="https://github.com/user-attachments/assets/1c4a3bd2-0353-4b8d-8562-30f28eddd1ca" />
+
+
+
+
+
+
+Selanjutnya dilakukan konfigurasi pada node Abbey dengan menjalankan script
+
+```
+./setup_15_abbey_final.sh
+```
+
+<img width="1046" height="203" alt="Screenshot 2026-10-04 at 23 27 20" src="https://github.com/user-attachments/assets/ba639ff0-a264-4d1c-8076-b6830c37d805" />
+
+
+
+
+
+Script tersebut digunakan untuk menyiapkan path /orion pada Abbey. Path ini hanya digunakan untuk menyajikan konten statis dan tidak memerlukan proses rendering PHP.
+Setelah konfigurasi selesai, dilakukan pengujian terhadap path /eternal.
+Lebih bagus pengujiannya dijalankan dari salah satu client, misalnya Alpha, agar membuktikan layanan dapat diakses dari luar node Penny
+
+```
+curl http://penny.k22.com/eternal/index.php
+```
+
+
+<img width="881" height="60" alt="Screenshot 2026-10-04 at 23 27 46" src="https://github.com/user-attachments/assets/2a1d11b2-266e-4fab-83ad-a5bc155e2959" />
+
+
+
+
+
+
+Hasil pengujian digunakan untuk memastikan bahwa file index.php dapat diakses dan berhasil dirender oleh server. Jika konfigurasi berjalan dengan benar, output yang muncul merupakan hasil eksekusi PHP dan bukan source code PHP mentah
+
+
+Pengujian selanjutnya dilakukan terhadap path /orion pada Abbey
+
+```
+curl http://abbey.k22.com/orion/
+```
+Hasil pengujian digunakan untuk memastikan bahwa konten statis pada direktori /var/www/orion dapat diakses melalui Abbey dengan benar
+
+
+
+
+<img width="421" height="124" alt="Screenshot 2026-10-04 at 23 28 19" src="https://github.com/user-attachments/assets/af3ee711-d84e-4d4b-b6f2-c77438f15bad" />
+
+
+
+
+
+
+Berdasarkan hasil konfigurasi dan pengujian, Penny berhasil menyediakan path /eternal yang mampu menjalankan dan menampilkan hasil rendering file PHP. Sementara itu, Abbey berhasil menyediakan path /orion sebagai layanan konten statis. Dengan demikian, kedua jalur khusus telah berjalan sesuai dengan requirement nomor 15
+
+
+### 16. Stress Test Menggunakan ApacheBench
+
+Pada nomor 16, salah satu client digunakan untuk melakukan stress test terhadap dua endpoint, yaitu www.k22.com dan static.k22.com, menggunakan ApacheBench. Masing-masing endpoint diuji dengan total 250 request dan nilai concurrency 10, yang berarti maksimal terdapat 10 request yang dikirim secara bersamaan.Pengujian ini dilakukan untuk melihat performa kedua gateway dengan membandingkan beberapa parameter seperti jumlah request yang berhasil dan gagal, Requests per second, Time per request, serta Transfer rate
+
+Pengujian dilakukan dari salah satu node client, yaitu Alpha.
+
+```
+./setup_16_benchmark.sh
+```
+
+Script tersebut digunakan untuk menjalankan ApacheBench terhadap www.k22.com dan static.k22.com dengan masing-masing 250 request dan concurrency 10. Hasil benchmark kemudian disimpan ke dalam file agar dapat dianalisis kembali
+
+
+
+<img width="991" height="236" alt="Screenshot 2026-10-04 at 23 28 55" src="https://github.com/user-attachments/assets/c20933c6-89dd-460f-ac24-49ae11adfed0" />
+
+
+
+
+
+Setelah proses benchmark selesai, ringkasan hasil pengujian terhadap www.k22.com diperiksa menggunakan perintah berikut
+
+```
+cat benchmark_www.txt | grep -E "Complete requests|Failed requests|Requests per second|Time per request|Transfer rate"
+```
+Perintah tersebut digunakan untuk mengambil bagian-bagian penting dari hasil ApacheBench, yaitu jumlah request yang selesai, jumlah request yang gagal, jumlah request yang dapat dilayani per detik, waktu yang dibutuhkan untuk setiap request, serta kecepatan transfer data
+
+
+
+<img width="918" height="143" alt="Screenshot 2026-10-04 at 23 29 25" src="https://github.com/user-attachments/assets/9327916b-aa99-4c7d-8947-a98f3b5b9802" />
+
+
+
+
+Dari hasil tersebut, nilai Complete requests menunjukkan jumlah request yang berhasil diselesaikan, sedangkan Failed requests menunjukkan jumlah request yang mengalami kegagalan. Nilai Requests per second dapat digunakan untuk melihat kemampuan server dalam menangani request setiap detik, sedangkan Time per request menunjukkan rata-rata waktu pemrosesan setiap request
+
+
+
+
+
+
+Selanjutnya dilakukan pengecekan hasil benchmark untuk endpoint static.k22.com
+
+```
+cat benchmark_static.txt | grep -E "Complete requests|Failed requests|Requests per second|Time per request|Transfer rate"
+```
+Hasil dari perintah tersebut digunakan untuk melihat performa endpoint static.k22.com dengan parameter yang sama seperti pengujian sebelumnya
+
+
+
+<img width="854" height="82" alt="Screenshot 2026-10-04 at 23 29 49" src="https://github.com/user-attachments/assets/e9a87839-8a3d-4c68-878c-209689ade1c4" />
+
+
+
+
+
+
+Dengan membandingkan nilai Requests per second dan Time per request dari kedua endpoint, dapat diketahui perbedaan performa antara gateway yang melayani www.k22.com dan gateway yang melayani static.k22.com
+
+
+### 17. Penambahan TXT Record untuk Seluruh Client
+
+Pada nomor 17, DNS harus ditambahkan TXT record untuk seluruh client, yaitu Alpha, Beta, Gamma, Delta, dan Epsilon. Isi TXT record pada masing-masing hostname harus sama dengan nama host-nya sendiri. Sebagai contoh, query TXT terhadap alpha.k22.com harus mengembalikan nilai "alpha", beta.k22.com harus mengembalikan "beta", dan seterusnya hingga epsilon.k22.com
+
+Konfigurasi dilakukan pada node Prab sebagai DNS utama dengan menjalankan script berikut
+
+```
+./setup_dns_txt_17_final.sh
+```
+
+Script tersebut digunakan untuk menambahkan TXT record pada zona k22.com untuk seluruh client, yaitu Alpha, Beta, Gamma, Delta, dan Epsilon
+
+
+
+
+
+<img width="641" height="331" alt="Screenshot 2026-10-04 at 23 30 45" src="https://github.com/user-attachments/assets/24bfd561-af2e-4e96-910d-b9e050109976" />
+
+
+
+
+
+
+
+Setelah konfigurasi selesai, dilakukan pengujian dari salah satu node client, yaitu Alpha, menggunakan perintah dig TXT
+
+`````
+dig TXT alpha.k22.com
+dig TXT beta.k22.com
+dig TXT gamma.k22.com
+dig TXT delta.k22.com
+dig TXT epsilon.k22.com
+`````
+
+Pengujian tersebut digunakan untuk memastikan bahwa setiap hostname memiliki TXT record yang sesuai dengan nama host-nya.
+Hasil yang diharapkan antara lain
+
+`````
+alpha.k22.com   → "alpha"
+beta.k22.com    → "beta"
+gamma.k22.com   → "gamma"
+delta.k22.com   → "delta"
+epsilon.k22.com → "epsilon"
+`````
+
+
+
+<img width="983" height="386" alt="Screenshot 2026-10-04 at 23 31 16" src="https://github.com/user-attachments/assets/fa5d103b-362d-44d3-b62a-e7eaf8af85cc" />
+
+
+
+
+
+Berdasarkan hasil konfigurasi dan pengujian, TXT record untuk seluruh client berhasil ditambahkan ke DNS. Query terhadap masing-masing hostname mengembalikan nilai teks yang sesuai dengan nama host tersebut. Dengan demikian, DNS telah berhasil menyimpan dan mengembalikan informasi teks untuk Alpha, Beta, Gamma, Delta, dan Epsilon sesuai requirement nomor 17
+
+### 18. Pengujian Perubahan A Record dan TTL DNS
+
+Pada nomor 18, A record milik abbey.k22.com diubah sementara menjadi IP fiktif yang tetap memiliki format IP valid. Setelah itu, nilai serial SOA pada Prab harus dinaikkan agar perubahan zona dapat dikenali dan disinkronkan ke Tedd. Record terkait juga harus memiliki TTL 15 detik.     Soal Praktikum Modul 2 Komdat J…
+Pengujian dilakukan dalam tiga fase, yaitu sebelum perubahan, sesaat setelah perubahan, dan setelah TTL 15 detik habis. Tujuannya adalah untuk membuktikan bagaimana cache DNS mempertahankan record lama sampai TTL berakhir
+
+Sebelum melakukan perubahan DNS, dilakukan query terlebih dahulu untuk mengetahui IP asli dari abbey.k22.com
+
+``
+dig abbey.k22.com
+``
+
+
+<img width="918" height="370" alt="Screenshot 2026-10-04 at 23 32 31" src="https://github.com/user-attachments/assets/10fc0f88-1218-4b59-b041-578b5739bcee" />
+
+
+Sebelum perubahan, record Abbey masih menunjukkan IP asli:
+
+```
+abbey.k22.com. 604800 IN A 192.222.2.2
+```
+
+Hasil tersebut menunjukkan bahwa abbey.k22.com masih mengarah ke IP asli 192.222.2.2
+
+Selanjutnya dilakukan perubahan konfigurasi zona DNS pada node Prab sebagai DNS master
+File zona dibuka menggunakan
+
+``
+nano /etc/bind/jarkom/k22.com
+``
+
+
+<img width="1004" height="424" alt="Screenshot 2026-10-04 at 23 34 49" src="https://github.com/user-attachments/assets/e45f4efe-7730-445f-bf24-1d4518ec761c" />
+
+
+
+Pada konfigurasi awal, A record Abbey adalah
+
+``
+abbey    IN    A    192.222.2.2
+``
+
+Record tersebut kemudian diubah menjadi
+
+``
+abbey    15    IN    A    192.222.9.99
+``
+
+Perubahan tersebut mengubah alamat IP Abbey dari 192.222.2.2 menjadi IP fiktif 192.222.9.99 sekaligus mengatur TTL record menjadi 15 detik
+
+
+Setelah mengubah A record, serial SOA juga dinaikkan agar perubahan zona dapat dikenali sebagai versi terbaru dan diteruskan menuju DNS slave.
+Serial sebelumnya
+
+``
+2026093003
+``
+
+
+``
+2026100113
+``
+
+Peningkatan serial ini diperlukan agar Tedd mengetahui bahwa terdapat perubahan pada zona k22.com dan melakukan sinkronisasi dengan Prab
+
+Sebelum konfigurasi DNS diterapkan, dilakukan pengecekan file zona untuk memastikan tidak terdapat kesalahan syntax
+
+``
+named-checkzone k22.com /etc/bind/jarkom/k22.com
+``
+
+
+<img width="524" height="75" alt="Screenshot 2026-10-04 at 23 38 44" src="https://github.com/user-attachments/assets/87364ca2-d358-4bf5-8cdb-4525123ad734" />
+
+
+Setelah file zona dipastikan valid, service DNS direload agar konfigurasi terbaru dapat diterapkan.
+
+
+``
+kill -HUP $(pidof named)
+``
+
+Setelah perubahan diterapkan, dilakukan query kembali terhadap abbey.k22.com
+
+``
+dig abbey.k22.com
+``
+
+
+<img width="584" height="318" alt="Screenshot 2026-10-04 at 23 39 52" src="https://github.com/user-attachments/assets/8e4b104b-acac-4314-a94b-f4110f2c01ac" />
+
+
+Setelah perubahan berhasil diterapkan pada Prab, dilakukan pengecekan pada Tedd sebagai DNS slave untuk memastikan zona terbaru telah berhasil diterima
+
+``
+dig @127.0.0.1 abbey.k22.com
+``
+
+<img width="832" height="378" alt="Screenshot 2026-10-04 at 23 40 43" src="https://github.com/user-attachments/assets/6bd1dece-ade8-4943-93f0-afe4ae654797" />
+
+
+
+Berdasarkan pengujian yang dilakukan, A record abbey.k22.com berhasil diubah dari IP asli 192.222.2.2 menjadi IP fiktif 192.222.9.99. TTL record Abbey juga berhasil diatur menjadi 15 detik dan serial SOA dinaikkan dari 2026093003 menjadi 2026100113.
+Konfigurasi zona berhasil divalidasi dan direload pada Prab. Hasil query pada Tedd juga menunjukkan 192.222.9.99 dengan TTL 15 detik, sehingga dapat dibuktikan bahwa perubahan zona berhasil tersinkronisasi dari DNS master menuju DNS slave.
+Catatan penting buat bukti laporanmu: dari command yang kamu kasih sekarang, kamu sudah punya bukti IP sebelum perubahan, IP setelah perubahan, dan sinkronisasi Tedd. Tapi belum ada screenshot yang benar-benar menunjukkan fase “sesaat setelah perubahan masih mendapat IP lama karena cache, kemudian setelah >15 detik menjadi IP baru.” Kalau asistennya ketat soal tiga fase itu, sebaiknya ambil satu bukti cache tambahan sebelum final
+
+### 19. CNAME ke Domain Eksternal
+
+
+Pada nomor 19, dibuat CNAME record agar outbound.k22.com menjadi alias dari domain eksternal http.badssl.com. Tujuannya adalah memastikan bahwa ketika outbound.k22.com diakses, DNS tetap mengarah ke host eksternal tersebut
+
+``
+./setup_dns_cname_19.sh
+``
+
+Script tersebut digunakan untuk menambahkan record CNAME outbound.k22.com yang mengarah ke http.badssl.com
+
+uji dns:
+``
+dig outbound.k22.com
+``
+
+hasil 
+
+``
+outbound.k22.com. CNAME http.badssl.com.
+``
+
+
+Selanjutnya dilakukan pengujian menggunakan curl
+
+``
+curl http://outbound.k22.com
+``
+
+
+CNAME outbound.k22.com berhasil diarahkan ke http.badssl.com, dan hasil pengujian curl menunjukkan bahwa domain internal tersebut dapat digunakan untuk mengakses konten dari domain eksternal yang ditentukan
+
+
+### 20. Final Check dan Autostart Service
+
+
+Pada nomor 20, setelah seluruh konfigurasi selesai, semua service dan konfigurasi dari nomor sebelumnya harus tetap berjalan normal setelah node direstart. Service seperti Apache, Nginx, DNS, PHP-FPM, dan konfigurasi reverse proxy harus bersifat persisten dan dapat aktif kembali secara otomatis.
+Khusus konfigurasi nomor 18, perubahan sementara pada abbey.k22.com tidak dipertahankan. Record Abbey harus dikembalikan ke IP normal, yaitu 192.222.2.2, lalu DNS dikembalikan ke kondisi normal dan tetap sinkron antara master dan slave
+
+Pengecekan dilakukan pada node Abbey untuk memastikan service Nginx masih berjalan
+
+
+
+``
+ps aux | grep nginx
+``
+
+
+Karena perubahan pada nomor 18 hanya digunakan untuk pengujian TTL, A record Abbey harus dikembalikan ke alamat IP asli.
+Record Abbey dikembalikan menjadi
+
+``
+abbey.k22.com → 192.222.2.2
+``
+
+Setelah itu, serial DNS disesuaikan kembali dan konfigurasi direload agar DNS berada dalam kondisi normal.
+
+Setelah rollback selesai, dilakukan pengujian untuk memastikan Abbey kembali dapat diakses dengan normal
+
+``
+curl -I http://abbey.k22.com
+``
+
+
+Selanjutnya dilakukan pengujian terhadap path /orion untuk memastikan konfigurasi nomor 15 masih tetap berjalan
+
+``
+curl http://abbey.k22.com/orion/
+``
+
+
+Jika konfigurasi masih aktif, halaman statis /orion akan tetap dapat diakses dengan normal.
+
+
+Berdasarkan pengecekan akhir, service Nginx pada Abbey masih berjalan dan konfigurasi web tetap dapat digunakan. Record abbey.k22.com juga telah dikembalikan ke IP normal 192.222.2.2 sehingga perubahan sementara dari nomor 18 tidak dipertahankan.
+Pengujian akses ke Abbey dan path /orion menunjukkan bahwa konfigurasi sebelumnya masih berfungsi. Dengan demikian, sistem telah dikembalikan ke kondisi normal dan service tetap aktif sesuai requirement nomor 20
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
