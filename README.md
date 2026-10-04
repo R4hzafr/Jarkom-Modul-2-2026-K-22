@@ -1252,7 +1252,7 @@ echo
 
 Testing di **obladi** menggunakan curl dan di **desmond** menggunakan lynx
 
-![assets/9-result.png]
+![alt img](assets/9-result.png)
 
 ---
 
